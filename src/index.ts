@@ -56,8 +56,9 @@ const main = async () => {
       }
   
       db.save();
-
-      console.log(`Sent ${newReports} new reports`);
+      if (newReports > 0) {
+        console.log(`Sent ${newReports} new reports`);
+      }
     }
   }, parseInt(process.env.REPORT_POLL_SECONDS as string) * 1000);
 }
