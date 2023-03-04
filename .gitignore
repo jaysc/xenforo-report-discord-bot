@@ -1,0 +1,9 @@
+/node_modules
+/dist
+
+.reports.json
+.env
+
+# Deployment specific
+Dockerfile
+fly.toml
