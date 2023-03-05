@@ -1,6 +1,7 @@
 /node_modules
 /dist
 
+report.json
 .env
 
 # Deployment specific
