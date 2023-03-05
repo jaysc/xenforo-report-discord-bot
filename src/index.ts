@@ -25,17 +25,26 @@ const main = async () => {
   const reportApis = await getApiData();
 
   if (reportApis) {
+    const newReportIds = [];
+
     for (const reportApi of reportApis) {
+      const report = mapReport(reportApi);
       if (!(await getReport(reportApi.report_id))) {
-        const report = mapReport(reportApi);
 
         await db.push(`/${report.report_id}`, report);
         intialReportCounter++;
       }
+
+      newReportIds.push(report.report_id.toString())
     }
 
-    db.save();
+    if (intialReportCounter > 0) {
+      db.save();
+    }
+
+    await refreshReports(newReportIds)
   }
+
   console.log(`Added ${intialReportCounter} initial reports`)
 
   console.log('Starting schedule')
@@ -45,22 +54,44 @@ const main = async () => {
     const reportApis = await getApiData();
 
     if (reportApis) {
+      const newReportIds = [];
+
       for (const reportApi of reportApis) {
+        const report = mapReport(reportApi);
         if (!(await getReport(reportApi.report_id))) {
-          const report = mapReport(reportApi);
 
           await db.push(`/${report.report_id}`, report);
           sendReport(report);
           newReports++;
         }
+
+        newReportIds.push(report.report_id.toString())
       }
-  
-      db.save();
+
       if (newReports > 0) {
+        db.save();
         console.log(`Sent ${newReports} new reports`);
       }
+
+      await refreshReports(newReportIds)
     }
   }, parseInt(process.env.REPORT_POLL_SECONDS as string) * 1000);
+}
+
+const refreshReports = async (newReportIds: string[]) => {
+  const existingReports = await getReports()
+  let deletedReports = 0;
+  for (const existingReportId of Object.keys(existingReports)) {
+    if (!newReportIds.includes(existingReportId)) {
+      await db.delete(`/${existingReportId}`)
+      deletedReports++;
+    }
+  }
+
+  if (deletedReports > 0) {
+    console.log(`Deleted ${deletedReports} reports`);
+    db.save();
+  }
 }
 
 const getApiData = async () => {
