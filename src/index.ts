@@ -58,11 +58,21 @@ const main = async () => {
 
       for (const reportApi of reportApis) {
         const report = mapReport(reportApi);
-        if (!(await getReport(reportApi.report_id))) {
+        const existingReport = await getReport(reportApi.report_id);
+        if (!existingReport) {
 
           await db.push(`/${report.report_id}`, report);
           sendReport(report);
           newReports++;
+        }
+        else if (existingReport.latest_report_comment.report_comment_id !== report.latest_report_comment.report_comment_id) {
+          await db.delete(`/${report.report_id}/report_comment`);
+          await db.push(`/${report.report_id}/report_comment`, report.report_comment);
+
+          await db.delete(`/${report.report_id}/latest_report_comment`);
+          await db.push(`/${report.report_id}/latest_report_comment`, report.latest_report_comment);
+
+          sendReport(report);
         }
 
         newReportIds.push(report.report_id.toString())

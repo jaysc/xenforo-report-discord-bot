@@ -39,15 +39,16 @@ const sendReport = async (report: Report) => {
 
 const createReportEmbed = (report: Report) => {
     const date = dayjs.unix(report.first_report_date);
-    const description = `Days since report: **${dayjs().diff(date, 'day')}**`
-
+    //const description = `Days since report opened: **${dayjs().diff(date, 'day')}**`
     const reportEmbed = new EmbedBuilder()
         .setTitle(`${report.content_info.username} - [${report.report_id}]`)
         .addFields(
-            { name: "Report Date", value: date.format('YYYY-MM-DD') },
+            { name: "Report date", value: date.format('YYYY-MM-DD') },
+            { name: "Reported by", value: report.latest_report_comment.username },
             { name: "Thread title", value: report.content_info.thread_title },
-            { name: "Report count", value: report.report_count.toString() })
-        .setDescription(description)
+            { name: "Report count", value: report.report_count.toString() }
+        )
+        .setDescription(report.latest_report_comment.message)
         .setURL(report.report_url)
         .setTimestamp()
 
