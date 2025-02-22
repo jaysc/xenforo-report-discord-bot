@@ -116,6 +116,8 @@ const getApiData = async () => {
 
       return status >= 200 && status < 300;
     }
+  }).catch((error) => {
+    console.log(error)
   });
 
   return response?.data?.reports as ReportApi[] | null;
