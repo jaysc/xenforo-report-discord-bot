@@ -34,13 +34,17 @@ const sendReport = async (report: Report) => {
         return;
     }
 
-    await channel.send({ embeds: [createReportEmbed(report)] });
+    const embed = createReportEmbed(report)
+    if (embed) {
+        await channel.send({ embeds: [embed] });
+    }
 }
 
 const createReportEmbed = (report: Report) => {
     const date = dayjs.unix(report.first_report_date);
     //const description = `Days since report opened: **${dayjs().diff(date, 'day')}**`
-    const reportEmbed = new EmbedBuilder()
+    try {
+        const reportEmbed = new EmbedBuilder()
         .setTitle(`${report.content_info.username} - [${report.report_id}]`)
         .addFields(
             { name: "Report date", value: date.format('YYYY-MM-DD') },
@@ -51,8 +55,16 @@ const createReportEmbed = (report: Report) => {
         .setDescription(report.latest_report_comment.message)
         .setURL(report.report_url)
         .setTimestamp()
+        return reportEmbed;
+    } catch (e) {
+        console.error(e)
+        console.log({ name: "Report date", value: date.format('YYYY-MM-DD') },
+        { name: "Reported by", value: report.latest_report_comment.username },
+        { name: "Thread title", value: report.content_info.thread_title },
+        { name: "Report count", value: report.report_count.toString() })
 
-    return reportEmbed;
+        return null;
+    }
 }
 
 const sendCurrentReports = async (reports: Reports) => {
@@ -62,7 +74,10 @@ const sendCurrentReports = async (reports: Reports) => {
     }
 
     for (const report of Object.values(reports)) {
-        await channel.send({ embeds: [createReportEmbed(report)] });
+        const embed = createReportEmbed(report)
+        if (embed) {
+            await channel.send({ embeds: [embed] });
+        }
     }
 }
 
