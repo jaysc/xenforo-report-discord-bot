@@ -91,18 +91,22 @@ const main = async () => {
 const refreshReports = async (newReportIds: string[]) => {
   const existingReports = await getReports()
   let deletedReports = 0;
-  if (existingReports){
-  for (const existingReportId of Object.keys(existingReports)) {
-    if (!newReportIds.includes(existingReportId)) {
-      await db.delete(`/${existingReportId}`)
-      deletedReports++;
+  if (existingReports) {
+    for (const existingReportId of Object.keys(existingReports)) {
+      if (!newReportIds.includes(existingReportId)) {
+        await db.delete(`/${existingReportId}`)
+        deletedReports++;
+      }
     }
-  }
 
-  if (deletedReports > 0) {
-    console.log(`Deleted ${deletedReports} reports`);
-    db.save();
-  } }
+    if (deletedReports > 0) {
+      console.log(`Deleted ${deletedReports} reports`);
+      db.save();
+    }
+  } else {
+    console.log('Deleting DB file')
+    db.resetData('{}')
+  }
 }
 
 const getApiData = async () => {
