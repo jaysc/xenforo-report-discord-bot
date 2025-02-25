@@ -91,7 +91,7 @@ const main = async () => {
 const refreshReports = async (newReportIds: string[]) => {
   const existingReports = await getReports()
   let deletedReports = 0;
-  if (existingReports) {
+  if (existingReports === null) {
     for (const existingReportId of Object.keys(existingReports)) {
       if (!newReportIds.includes(existingReportId)) {
         await db.delete(`/${existingReportId}`)
@@ -106,6 +106,7 @@ const refreshReports = async (newReportIds: string[]) => {
   } else {
     console.log('Deleting DB file')
     db.resetData('{}')
+    db.reload();
   }
 }
 
