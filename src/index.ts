@@ -93,7 +93,7 @@ const main = async () => {
 const refreshReports = async (newReportIds: string[]) => {
   const existingReports = await getReports()
   let deletedReports = 0;
-  if (existingReports === null) {
+  if (existingReports) {
     for (const existingReportId of Object.keys(existingReports)) {
       if (!newReportIds.includes(existingReportId)) {
         await db.delete(`/${existingReportId}`)
@@ -105,14 +105,6 @@ const refreshReports = async (newReportIds: string[]) => {
       console.log(`Deleted ${deletedReports} reports`);
       db.save();
     }
-  } else {
-    console.log('Deleting DB file')
-    db.resetData('{}')
-    fs.writeFile('./reports.json', "{}", err => {
-      if (err) {
-        console.error(err);
-      }
-    });
   }
 }
 
