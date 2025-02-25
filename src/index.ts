@@ -5,6 +5,8 @@ import axios from 'axios';
 import { JsonDB, Config } from 'node-json-db';
 import { mapReport, Report, ReportApi, Reports } from "./report";
 import { connect, sendReport } from "./bot";
+import fs from "node:fs";
+
 
 const db = new JsonDB(new Config("reports", false, false, '/'));
 const report_api_url = `${process.env.BASE_URL}api/reports/`
@@ -106,7 +108,11 @@ const refreshReports = async (newReportIds: string[]) => {
   } else {
     console.log('Deleting DB file')
     db.resetData('{}')
-    db.reload();
+    fs.writeFile('./reports.json', "{}", err => {
+      if (err) {
+        console.error(err);
+      }
+    });
   }
 }
 
