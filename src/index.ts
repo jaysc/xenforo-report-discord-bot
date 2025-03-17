@@ -82,7 +82,7 @@ const main = async () => {
 
       if (newReports > 0) {
         db.save();
-        console.log(`Sent ${newReports} new reports`);
+        console.log(`Saved ${newReports} new reports`);
       }
 
       await refreshReports(newReportIds)

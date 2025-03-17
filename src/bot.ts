@@ -31,6 +31,7 @@ const getReportChannel = () => {
 const sendReport = async (report: Report) => {
     const channel = getReportChannel();
     if (!channel) {
+        console.log('Report channel not found')
         return;
     }
 
@@ -49,7 +50,7 @@ const createReportEmbed = (report: Report) => {
         .addFields(
             { name: "Report date", value: date.format('YYYY-MM-DD') },
             { name: "Reported by", value: report.latest_report_comment.username },
-            { name: "Thread title", value: report.content_info.thread_title },
+            { name: "Thread title", value: report.content_info?.thread_title || "No thread title" },
             { name: "Report count", value: report.report_count.toString() }
         )
         .setDescription(report.latest_report_comment.message)
