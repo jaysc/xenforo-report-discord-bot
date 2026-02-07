@@ -1,14 +1,16 @@
 {
   "name": "xenforo-report-consumer",
   "version": "1.0.0",
-  "description": "",
+  "description": "A node service that periodically polls a XenForo API to post reports to Discord",
   "main": "index.js",
   "scripts": {
     "build": "rimraf ./dist && tsc",
     "build:tsc": "tsc",
     "dev": "ts-node src/index.ts",
     "start": "node ./dist/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "author": "Jaysc",
   "license": "ISC",
@@ -17,15 +19,17 @@
     "dayjs": "^1.11.7",
     "discord.js": "^14.7.1",
     "dotenv": "^16.0.3",
-    "node-json-db": "^2.1.4",
-    "rimraf": "^4.3.0",
-    "ts-node": "^10.9.1"
+    "node-json-db": "^2.1.4"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.54.0",
     "@typescript-eslint/parser": "^5.54.0",
+    "@vitest/coverage-v8": "^1.2.0",
     "eslint": "^8.35.0",
     "prettier": "2.8.4",
-    "typescript": "^4.9.5"
+    "rimraf": "^4.3.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.9.5",
+    "vitest": "^1.2.0"
   }
 }

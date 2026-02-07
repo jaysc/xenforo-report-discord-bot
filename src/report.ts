@@ -33,9 +33,7 @@ type Report = ReportApi & {
 
 type Reports = Record<string, Report>
 
-const reportUrl = `${process.env.BASE_URL}forums/reports/`
-
-const mapReport = (report: ReportApi): Report => {
+const mapReport = (report: ReportApi, reportUrl: string): Report => {
     return {
         ...report,
         report_url: `${reportUrl}${report.report_id}`,
@@ -43,4 +41,4 @@ const mapReport = (report: ReportApi): Report => {
     }
 }
 
-export { mapReport, Report, ReportApi, Reports }
+export { mapReport, Report, ReportApi, Reports, report_comment }

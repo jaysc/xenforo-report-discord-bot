@@ -1,86 +1,135 @@
-import { Client, EmbedBuilder, Events, GatewayIntentBits } from 'discord.js';
-import type { TextChannel } from 'discord.js'
-import { Report, Reports } from './report';
-import dayjs from 'dayjs'
+import {
+  Client,
+  EmbedBuilder,
+  Events,
+  GatewayIntentBits,
+  TextChannel,
+} from "discord.js";
+import { Config } from "./config";
+import { Report } from "./report";
+import { IDiscordBot } from "./report-service";
+import dayjs from "dayjs";
 
-const token = process.env.DISCORD_API_KEY
+export class DiscordBot implements IDiscordBot {
+  private readonly client: Client;
+  private readonly token: string;
+  private readonly channelId: string;
+  private channel: TextChannel | null = null;
 
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+  constructor(config: Config) {
+    this.client = new Client({ intents: [GatewayIntentBits.Guilds] });
+    this.token = config.discordApiKey;
+    this.channelId = config.discordChannelId;
+  }
 
-const connect = async () => {
-    return new Promise<boolean>((resolve, reject) => {
-        client.once(Events.ClientReady, c => {
-            console.log(`Ready! Logged in as ${c.user.tag}`);
-            resolve(true);
-        });
+  async connect(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.client.once(Events.ClientReady, async (c) => {
+        console.log(`Ready! Logged in as ${c.user.tag}`);
 
-        client.once(Events.Error, c => {
-            console.error(c)
-            reject(false)
-        })
+        // Validate and cache the channel
+        try {
+          await this.validateChannel();
+          resolve();
+        } catch (error) {
+          reject(error);
+        }
+      });
 
-        client.login(token);
-    })
-}
+      this.client.once(Events.Error, (error) => {
+        console.error("Discord client error:", error);
+        reject(new Error("Failed to connect to Discord"));
+      });
 
-const getReportChannel = () => {
-    // todo need better way to store and validate this
-    return client.channels.cache.get(process.env.DISCORD_REPORT_CHANNEL_ID as string) as TextChannel | undefined;
-}
+      this.client.login(this.token).catch(reject);
+    });
+  }
 
-const sendReport = async (report: Report) => {
-    const channel = getReportChannel();
+  private async validateChannel(): Promise<void> {
+    const channel = this.client.channels.cache.get(this.channelId);
+
     if (!channel) {
-        console.log('Report channel not found')
-        return;
+      // Try fetching the channel if not in cache
+      try {
+        const fetchedChannel = await this.client.channels.fetch(this.channelId);
+        if (!fetchedChannel) {
+          throw new Error(
+            `Discord channel not found: ${this.channelId}. Please verify the channel ID.`
+          );
+        }
+        if (!fetchedChannel.isTextBased()) {
+          throw new Error(
+            `Discord channel ${this.channelId} is not a text channel`
+          );
+        }
+        this.channel = fetchedChannel as TextChannel;
+      } catch (error) {
+        throw new Error(
+          `Failed to fetch Discord channel ${this.channelId}: ${error instanceof Error ? error.message : String(error)}`
+        );
+      }
+    } else {
+      if (!channel.isTextBased()) {
+        throw new Error(
+          `Discord channel ${this.channelId} is not a text channel`
+        );
+      }
+      this.channel = channel as TextChannel;
     }
 
-    const embed = createReportEmbed(report)
+    console.log(`Validated Discord channel: ${this.channel.name}`);
+  }
+
+  async sendReport(report: Report): Promise<void> {
+    if (!this.channel) {
+      console.error("Cannot send report: channel not initialized");
+      return;
+    }
+
+    const embed = this.createReportEmbed(report);
     if (embed) {
-        await channel.send({ embeds: [embed] });
+      try {
+        await this.channel.send({ embeds: [embed] });
+      } catch (error) {
+        console.error("Failed to send Discord message:", error);
+      }
     }
-}
+  }
 
-const createReportEmbed = (report: Report) => {
-    const date = dayjs.unix(report.first_report_date);
-    //const description = `Days since report opened: **${dayjs().diff(date, 'day')}**`
+  private createReportEmbed(report: Report): EmbedBuilder | null {
     try {
-        const reportEmbed = new EmbedBuilder()
+      const date = dayjs.unix(report.first_report_date);
+
+      const embed = new EmbedBuilder()
         .setTitle(`${report.content_info.username} - [${report.report_id}]`)
         .addFields(
-            { name: "Report date", value: date.format('YYYY-MM-DD') },
-            { name: "Reported by", value: report.latest_report_comment.username },
-            { name: "Thread title", value: report.content_info?.thread_title || "No thread title" },
-            { name: "Report count", value: report.report_count.toString() }
+          { name: "Report date", value: date.format("YYYY-MM-DD") },
+          { name: "Reported by", value: report.latest_report_comment.username },
+          {
+            name: "Thread title",
+            value: report.content_info?.thread_title || "No thread title",
+          },
+          { name: "Report count", value: report.report_count.toString() }
         )
         .setDescription(report.latest_report_comment.message)
         .setURL(report.report_url)
-        .setTimestamp()
-        return reportEmbed;
-    } catch (e) {
-        console.error(e)
-        console.log({ name: "Report date", value: date.format('YYYY-MM-DD') },
-        { name: "Reported by", value: report.latest_report_comment.username },
-        { name: "Thread title", value: report.content_info.thread_title },
-        { name: "Report count", value: report.report_count.toString() })
+        .setTimestamp();
 
-        return null;
+      return embed;
+    } catch (error) {
+      console.error("Failed to create report embed:", error);
+      console.log("Report data:", {
+        report_id: report.report_id,
+        username: report.content_info?.username,
+        thread_title: report.content_info?.thread_title,
+        report_count: report.report_count,
+      });
+      return null;
     }
+  }
+
+  async disconnect(): Promise<void> {
+    await this.client.destroy();
+    console.log("Discord client disconnected");
+  }
 }
-
-const sendCurrentReports = async (reports: Reports) => {
-    const channel = getReportChannel();
-    if (!channel) {
-        return;
-    }
-
-    for (const report of Object.values(reports)) {
-        const embed = createReportEmbed(report)
-        if (embed) {
-            await channel.send({ embeds: [embed] });
-        }
-    }
-}
-
-
-export { connect, sendCurrentReports, sendReport };
