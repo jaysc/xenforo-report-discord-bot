@@ -54,10 +54,6 @@ export class ReportService {
       } else if (this.hasNewComment(existingReport, report)) {
         // Existing report with new comment
         await this.repository.updateReportComments(report);
-
-        if (notify) {
-          await this.discord.sendReport(report);
-        }
       }
     }
 

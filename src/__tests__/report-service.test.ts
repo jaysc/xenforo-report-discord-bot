@@ -124,7 +124,7 @@ describe("ReportService", () => {
       expect(mockRepository.save).toHaveBeenCalledTimes(1);
     });
 
-    it("should update comments and notify when a new comment is detected", async () => {
+    it("should update comments without notifying when a new comment is detected", async () => {
       const existingReport = createMockReport();
       const newReportApi = createMockReportApi({
         report_comment: [
@@ -146,7 +146,7 @@ describe("ReportService", () => {
       await service.processReports(true);
 
       expect(mockRepository.updateReportComments).toHaveBeenCalledTimes(1);
-      expect(mockDiscord.sendReport).toHaveBeenCalledTimes(1);
+      expect(mockDiscord.sendReport).not.toHaveBeenCalled();
     });
 
     it("should not update or notify when report has no changes", async () => {

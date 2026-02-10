@@ -1,7 +1,8 @@
 /node_modules
 /dist
 
-report.json
+reports.json
+vitest.config.js
 .env
 
 # Deployment specific
