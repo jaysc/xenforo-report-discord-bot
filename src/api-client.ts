@@ -65,7 +65,7 @@ export class ApiClient {
           console.warn(
             `API request failed (attempt ${attempt}/${this.maxRetries}): ${lastError.message}. Retrying...`
           );
-          await this.delay(this.retryDelayMs * attempt); // Exponential backoff
+          await this.delay(this.retryDelayMs * attempt); // Linear backoff
         } else {
           console.error(
             `API request failed (attempt ${attempt}/${this.maxRetries}): ${lastError.message}`

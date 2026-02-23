@@ -55,9 +55,9 @@ describe("mapReport", () => {
 
     const result = mapReport(apiReport, reportUrl);
 
-    expect(result.latest_report_comment.report_comment_id).toBe(2);
-    expect(result.latest_report_comment.message).toBe("Latest comment");
-    expect(result.latest_report_comment.username).toBe("Reporter2");
+    expect(result.latest_report_comment?.report_comment_id).toBe(2);
+    expect(result.latest_report_comment?.message).toBe("Latest comment");
+    expect(result.latest_report_comment?.username).toBe("Reporter2");
   });
 
   it("should preserve all original API report properties", () => {
@@ -90,7 +90,7 @@ describe("mapReport", () => {
 
     const result = mapReport(apiReport, reportUrl);
 
-    expect(result.latest_report_comment.report_comment_id).toBe(1);
-    expect(result.latest_report_comment.message).toBe("Only comment");
+    expect(result.latest_report_comment?.report_comment_id).toBe(1);
+    expect(result.latest_report_comment?.message).toBe("Only comment");
   });
 });

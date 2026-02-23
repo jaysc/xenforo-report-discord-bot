@@ -131,7 +131,7 @@ describe("ReportService", () => {
           ...existingReport.report_comment,
           {
             report_id: 1,
-            report_comment_id: 2, // New comment ID
+            report_comment_id: 2,
             comment_date: 1234567900,
             message: "New comment",
             username: "AnotherUser",
@@ -147,6 +147,7 @@ describe("ReportService", () => {
 
       expect(mockRepository.updateReportComments).toHaveBeenCalledTimes(1);
       expect(mockDiscord.sendReport).not.toHaveBeenCalled();
+      expect(mockRepository.save).toHaveBeenCalledTimes(1);
     });
 
     it("should not update or notify when report has no changes", async () => {

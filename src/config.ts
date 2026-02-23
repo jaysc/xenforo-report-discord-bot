@@ -49,7 +49,7 @@ export interface Config {
 }
 
 function loadConfig(): Config {
-  const baseUrl = validateRequired("BASE_URL");
+  const baseUrl = validateRequired("BASE_URL").replace(/\/?$/, "/");
   const pollSeconds = validatePositiveInteger("REPORT_POLL_SECONDS", 60);
 
   return {

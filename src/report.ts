@@ -28,7 +28,7 @@ type report_comment = {
 
 type Report = ReportApi & {
     report_url: string
-    latest_report_comment: report_comment;
+    latest_report_comment?: report_comment;
 }
 
 type Reports = Record<string, Report>
@@ -37,7 +37,9 @@ const mapReport = (report: ReportApi, reportUrl: string): Report => {
     return {
         ...report,
         report_url: `${reportUrl}${report.report_id}`,
-        latest_report_comment: report.report_comment[report.report_comment.length - 1]
+        latest_report_comment: report.report_comment.length > 0
+            ? report.report_comment[report.report_comment.length - 1]
+            : undefined,
     }
 }
 

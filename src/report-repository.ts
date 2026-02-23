@@ -10,7 +10,8 @@ export class ReportRepository {
 
   async getReport(reportId: number): Promise<Report | null> {
     try {
-      return await this.db.getData(`/${reportId}`);
+      const result = await this.db.getData(`/${reportId}`);
+      return result;
     } catch {
       return null;
     }
@@ -18,7 +19,8 @@ export class ReportRepository {
 
   async getAllReports(): Promise<Reports> {
     try {
-      return await this.db.getData("/");
+      const result = await this.db.getData("/");
+      return result;
     } catch {
       return {};
     }

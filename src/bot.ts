@@ -104,14 +104,14 @@ export class DiscordBot implements IDiscordBot {
         .setTitle(`${report.content_info.username} - [${report.report_id}]`)
         .addFields(
           { name: "Report date", value: date.format("YYYY-MM-DD") },
-          { name: "Reported by", value: report.latest_report_comment.username },
+          { name: "Reported by", value: report.latest_report_comment?.username ?? "Unknown" },
           {
             name: "Thread title",
             value: report.content_info?.thread_title || "No thread title",
           },
           { name: "Report count", value: report.report_count.toString() }
         )
-        .setDescription(report.latest_report_comment.message)
+        .setDescription(report.latest_report_comment?.message ?? "No comment")
         .setURL(report.report_url)
         .setTimestamp();
 
